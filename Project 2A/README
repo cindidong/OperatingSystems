@@ -1,0 +1,90 @@
+NAME: Cindi Dong
+
+
+Notes: My tests run for 2 minutes on the SEASnet servers because of the 24 threads 1000 iterations spin lock sync option for the list.
+
+
+
+Included Files:
+lab2_add.c: a C program that implements and tests a shared variable add function.
+
+lab2_list.c: a C driver program for a doubly linked list insertion, length, and deletion.
+
+SortedList.h: a header file describing the interfaces for linked list operations.
+
+SortedList.c: a C module that implements insert, delete, lookup, and length methods for a sorted doubly linked list.
+
+lab2_add.csv: csv file containing all results for all the Part-1 tests.
+
+lab2_list.csv: csv file containing all results for all the Part-2 tests.
+
+Pictures:
+lab2_add-1.png: threads and iterations required to generate a failure (with and without yields).
+lab2_add-2.png: average time per operation with and without yields.
+lab2_add-3.png: average time per (single threaded) operation vs. the number of iterations.
+lab2_add-4.png: threads and iterations that can run successfully with yields under each of the synchronization options.
+lab2_add-5.png: average time per (protected) operation vs. the number of threads.
+lab2_list-1.png: average time per (single threaded) unprotected operation vs. number of iterations (illustrating the correction of the per-operation cost for the list length).
+lab2_list-2.png: threads and iterations required to generate a failure (with and without yields).
+lab2_list-3.png: iterations that can run (protected) without failure.
+lab2_list-4.png: (length-adjusted) cost per operation vs the number of threads for the various synchronization options.
+
+Makefile: 5 targets
+-default/build: compiles lab2_add.c into lab2_add and SortedList.c, lab2_list.c into lab2_list with -g -Wall -Wextra -pthread -lrt flags
+-tests: uses the bash script tests to run all (over 200) specified test cases to generate results in CSV files
+graphs: uses lab2_add.gp and lab2_list.gp to generate the required graphs
+-clean: removes files created by Makefile
+-dist: creates compressed tarball with lab2_add.c, lab2_list.c, SortedList.c, SortedList.h, lab2_add.csv, lab2_list.csv, lab2_add-1.png, lab2_add-2.png, lab2_add-3.png, lab2_add-4.png, lab2_add-5.png, lab2_list-1.png, lab2_list-2.png, lab2_list-3.png, lab2_list-4.png, lab2_add.gp, lab2_list.gp, tests, Makefile, README
+
+Extra files:
+-lab2_add.gp: data reduction script for lab2_add gnuplots
+-lab2_list.gp: data reduction scripts for lab2_list gnuplots
+-tests: bash script with my make tests cases
+
+
+
+Questions:
+
+QUESTION 2.1.1 - causing conflicts:
+Why does it take many iterations before errors are seen?
+Why does a significantly smaller number of iterations so seldom fail?
+
+If iterations are low, the critical sections of code are executed less. Therefore, there is less chance for conflicts between threads to occur, which means less race conditions and less errors.
+
+
+QUESTION 2.1.2 - cost of yielding:
+Why are the --yield runs so much slower?
+Where is the additional time going?
+Is it possible to get valid per-operation timings if we are using the --yield option?
+If so, explain how. If not, explain why not.
+
+Yield runs slower because when a program yields, it hands control over to the OS to perform a context switch to switch between processes. This extra time is used in this context switch, as it is very expensive and time consuming. During the context switch, the OS flushes the cache, saves the registers and states of the current process as well as loads the new process's registers and states, etc. It is not possible to get valid per operation timings for the --yield option because the operation and context switch are counted together, and measuring the time of the context switch is very difficult.
+
+
+QUESTION 2.1.3 - measurement errors:
+Why does the average cost per operation drop with increasing iterations?
+If the cost per iteration is a function of the number of iterations, how do we know how many iterations to run (or what the "correct" cost is)?
+
+The average cost per operation drops with increasing iterations due to the way we are measuring it. We are measuring the time difference between creating the first thread and joining the last thread. Therefore, this measurement includes a lot of overhead like context switching, etc. When there are more iterations, this cost is "spread out" among more iterations. Therefore, to find the correct cost, you could try to run the program with a lot of iterations. We can also see this on the graph, as it flattens out as iterations increase. Therefore, we can estimate a correct cost based on that.
+
+
+QUESTION 2.1.4 - costs of serialization:
+Why do all of the options perform similarly for low numbers of threads?
+Why do the three protected operations slow down as the number of threads rises?
+
+Low numbers of threads means less concurrency. This means there are less critical sections to be executed, which means there are less calls to the lock and less wait times for it. Therefore, we see a similar performance for low numbers of threads. However, when the number of threads rises, there are more threads entering their critical sections who require the lock. This increases the wait time for a lock, as only one thread can have the lock at a time. Therefore, we see a slow down as number of threads rises.
+
+
+QUESTION 2.2.1 - scalability of Mutex
+Compare the variation in time per mutex-protected operation vs the number of threads in Part-1 (adds) and Part-2 (sorted lists).
+Comment on the general shapes of the curves, and explain why they have this shape.
+Comment on the relative rates of increase and differences in the shapes of the curves, and offer an explanation for these differences.
+
+The variation in time per mutex-protected operation vs threads show an overall increase in both parts. This means that the time per mutex protected operation increased with number of threads for both add part and the sorted list part. This makes sense, as more threads means more critical sections that need the lock, which increases wait times. However, part 2 shows a larger increase. This might be due to the extra operations performed by part 2, as part 2 has larger critical sections (inserting/deleting from the list) than part 1 (incrementing and decrementing a shared variable).
+
+
+QUESTION 2.2.2 - scalability of spin locks
+Compare the variation in time per protected operation vs the number of threads for list operations protected by Mutex vs Spin locks. Comment on the general shapes of the curves, and explain why they have this shape.
+Comment on the relative rates of increase and differences in the shapes of the curves, and offer an explanation for these differences.
+
+For both mutex and spin locks, the time per protected operation increased as the number of threads increased. This makes sense, as more threads means more critical sections that need the lock, which increases wait times. However, the slope of the spin lock is greater than the slope of the mutex lock. This is because of the nature of spin locks. Once a thread obtains a spin lock and if a context switch then happens, the new thread will waste its CPU time slice waiting for the lock to be free (which won't happen until the original thread currently holding the lock is running again). However, this won't happen with the mutex lock, as it will just skip the threads who don't have the lock. Thus, we avoid this overhead with the mutex lock, saving us time.

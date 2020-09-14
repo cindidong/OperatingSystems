@@ -1,0 +1,27 @@
+NAME: Cindi Dong
+
+
+Included Files:
+lab1b-client.c: C code that connects to a server. Supports the --port argument (specifics a port), --log argument (a file that stores a log of characters read and written to or from the server), and --compress (compresses and decompresses data between the server and the client).
+
+lab1b-server.c: C code connects with the client, receives the client's commands and sends them to the shell, and "serves" the client the outputs of those commands. If there is no --shell argument, it echos the client's input back. Supports the --port argument (specifics a port), --shell argument (runs a shell command), and --compress (compresses and decompresses data between the server and the client).
+
+Makefile: 3 targets
+-default: compiles lab1b-client.c into lab1b-client and lab1b-server.c into lab1b-server with -lz -g -Wall -Wextra flags
+-clean: removes files created by Makefile 
+-dist: creates compressed tarball with lab1b-server.c, lab1b-client.c, Makefile, and README
+
+
+Implementation notes: The client never processes (turns EOF to ^D, \n to \r\n, etc) input sent to the server. Likewise, the server always processes input sent from the client.
+If there isn't a --compress argument, the client does not process input sent from the server. The server processes the output from the shell and transmits to the client. 
+
+This choice was made because I wanted to check for an EOF from the shell, so I decided to process the shell output while checking for an EOF. However, this is unnecessary because once the shell exits it will be caught by POLLERR/POLLHUP anyways. I just wanted to follow the spec closely.
+
+If there is a --compress argument, the client processes input sent from the server. This this case, the server just compresses and transmits the output from the shell to the client without processing.
+
+This choice was made because processing the output of the shell requires you to step through character by character. If I was to do this, it would defeat the purpose of compressing, because I would have to send the compressed output character by character as well. Therefore, I checked for EOF after the output of the shell was sent directly to the client.
+
+
+Sources Used:
+Sockets: http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+Zlib Compression: https://www.zlib.net/zlib_how.html

@@ -1,0 +1,26 @@
+# NAME: Cindi Dong
+# EMAIL: cindidong@gmail.com
+# ID: 405126747
+
+
+{ echo "START"; sleep 1; echo "STOP"; sleep 1; echo "START"; sleep 1; echo "LOG"; sleep 1; echo "SCALE=C"; sleep 1; echo "PERIOD=2"; sleep 5; echo "OFF"; } | ./lab4b --log=log
+
+# check exit status is 0
+if [ $? -ne 0 ]; then
+	echo "Error: exit status is not 0!";
+else
+	echo "Success: exit status is 0!";
+fi
+
+# check if all the commands are in the log
+for i in START STOP LOG SCALE PERIOD OFF SHUTDOWN; do
+	grep "$i" log > results
+	if [ -s results ]; then
+		echo "Success: $i was found!";
+	else
+		echo "Error: $i not found!";
+	fi
+done
+
+rm -f log results
+

@@ -1,0 +1,7 @@
+NAME: Cindi Dong
+
+
+Files included:
+    README    - this file
+    Makefile  - builds application, creates soft link to python file
+    lab3b.py  - source file for file system inconsistency analysis

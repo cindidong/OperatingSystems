@@ -1,0 +1,25 @@
+NAME: Cindi Dong
+
+
+This project contains C code and a Makefile for running Grove Sensors (temperature sensor) on an embedded system.
+
+
+Included Files:
+lab4b.c: C source files for an embedded application that builds and runs on an embedded system
+Makefile: 4 targets
+-default: compiles lab4b with the flags -g -Wall -Wextra -lmraa -lm
+-check: executes an automated smoke-test of your application to see if it runs and can talk to its sensors
+-dist: creates compressed tarball with lab4b.c, Makefile, and README
+-clean: removes files created by Makefile
+
+Extra Files:
+-tests: Bash tests for my make check target. Checks exit code of the program and if the program logged START, STOP, LOG, SCALE, PERIOD, OFF, and SHUTDOWN correctly.
+
+
+Sources Used:
+https://www.tutorialspoint.com/c_standard_library/c_function_localtime.htm
+geeksforgeeks.org/time-function-in-c/
+https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_node/libc_418.html
+https://www.tutorialspoint.com/c_standard_library/c_function_sprintf.htm
+https://iotdk.intel.com/docs/master/mraa/
+
