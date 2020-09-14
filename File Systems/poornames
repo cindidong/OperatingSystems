@@ -1,0 +1,69 @@
+#!/bin/bash
+currentDir=".";
+flag="false";
+if [ $1 == "-r" ]; then
+   flag="true";
+   shift 1;
+fi;
+if [ "$#" -gt 1 ]; then
+   echo "You must enter 1 command line argument" 1>&2;
+   exit 1;
+fi;
+
+if [ "$#" -eq 1 ]; then
+   currentDir=$1;
+fi;
+DIRTEST=$( echo $currentDir | grep ^- );
+if [ $DIRTEST ]; then
+   echo "You cannot have a directory that starts with a -" 1>&2;
+   exit 1;
+fi;
+if [ ! -d "$currentDir" ]; then
+   echo "You must give a directory" 1>&2;
+   exit 1;
+fi;
+if [ ! -r "$currentDir" ]; then
+   echo "$currentDir is not readable" 1>&2;
+   exit 1;
+fi;
+if [ -L "$currentDir" ]; then
+   echo "Directory should not be a symbolic link" 1>&2;
+   exit 1;
+fi;
+
+IFS=$'\n';
+moreThan15Chars=$( find $currentDir -maxdepth 1 -mindepth 1 | 
+grep -E "\/[^/]{15,}+$" )
+illegalChars=$( find $currentDir -maxdepth 1 -mindepth 1 | 
+grep -E "\/[^\/]{0,14}$" | grep -E '\/[^\/]*[^-\.\/_a-zA-Z]+[-\._a-zA-Z]*$' )
+startingPeriod=$( find $currentDir -maxdepth 1 -mindepth 1 | 
+grep -E "\/[^\/]{0,14}$" | grep -E '\/[-\._a-zA-Z]+$' | grep -E '\/\.[^\/]+$' )
+startingDash=$( find $currentDir -maxdepth 1 -mindepth 1 | 
+grep -E "\/[^\/]{0,14}$" | grep -E '\/[-\._a-zA-Z]+$' | grep -E '\/\-[^\/]*$' )
+
+if [ ! -z "$moreThan15Chars" ]; then 
+   ls $moreThan15Chars -dpN1 --show-control-chars;
+fi;
+if [ ! -z "$illegalChars" ]; then 
+   ls $illegalChars -dpN1 --show-control-chars;
+fi;
+if [ ! -z "$startingPeriod" ]; then 
+   ls $startingPeriod -dpN1 --show-control-chars;
+fi;
+if [ ! -z "$startingDash" ]; then 
+   ls $startingDash -dpN1 --show-control-chars;
+fi;
+
+for i in $(find $currentDir -maxdepth 1 -mindepth 1 | 
+grep -E "\/[^\/]{0,14}$" | grep -E '\/[-\._a-zA-Z]+$' | 
+grep -E '\/[^\.][^\/]*$' | grep -E '\/[^\-][^\/]*$' | 
+tr '[:upper:]' '[:lower:]' | sort | uniq -d); do
+    tempFileNames=$( find $currentDir -maxdepth 1 -mindepth 1 | grep -ixF $i )
+    if [ ! -z "$tempFileNames" ]; then 
+       ls $tempFileNames -dpN1 --show-control-chars;
+       fi;
+done
+
+if [ $flag == "true" ]; then
+   find $currentDir -maxdepth 1 -mindepth 1 -type d -exec $0 '-r' {} \;
+fi;

@@ -1,0 +1,98 @@
+#!/bin/bash
+# NAME: Cindi Dong
+# EMAIL: cindidong@gmail.com
+# ID: 405126747
+
+# add tests
+add_iterations=(10 20 40 80 100 1000 10000 100000)
+add_threads=(1 2 4 8 12)
+add_sync=(m s c)
+
+# testing add-none
+for t in ${add_iterations[@]}; do
+    for i in ${add_threads[@]}; do
+	./lab2_add --iterations=$t --threads=$i >> lab2_add.csv
+    done
+done
+
+# testing add-yield
+for t in ${add_iterations[@]}; do
+    for i in ${add_threads[@]}; do
+	./lab2_add --iterations=$t --threads=$i --yield >> lab2_add.csv
+    done
+done
+
+add_iterations1=(10 20 40 80 100 1000 10000)
+# testing add-sync
+for t in ${add_iterations1[@]}; do
+    for i in ${add_threads[@]}; do
+	for k in ${add_sync[@]}; do
+	    ./lab2_add --iterations=$t --threads=$i --sync=$k >> lab2_add.csv
+	done
+    done
+done
+
+add_sync1=(m c)
+# testing add-yield-sync for mutex and CAS
+for t in ${add_iterations1[@]}; do
+    for i in ${add_threads[@]}; do
+	for k in ${add_sync1[@]}; do
+	    ./lab2_add --iterations=$t --threads=$i --sync=$k --yield >> lab2_add.csv
+	done
+    done
+done
+
+add_iterations2=(10 20 40 80 100 1000)
+# testing add-yield-sync for spin locks
+for t in ${add_iterations2[@]}; do
+    for i in ${add_threads[@]}; do
+	./lab2_add --iterations=$t --threads=$i --sync=s --yield >> lab2_add.csv
+    done
+done
+
+# list tests
+list_iterations1=(10 100 1000 10000 20000)
+list_threads=(2 4 8 12)
+list_yield=(i d il dl)
+list_sync=(m s)
+# testing list-none 1 thread
+for t in ${list_iterations1[@]}; do
+    ./lab2_list --iterations=$t --threads=1 >> lab2_list.csv
+done
+
+list_iterations2=(1 10 100 1000)
+# testing list-none
+for t in ${list_iterations2[@]}; do
+    for i in ${list_threads[@]}; do
+	./lab2_list --iterations=$t --threads=$i >> lab2_list.csv
+    done
+done
+
+list_iterations3=(1 2 4 8 16 32)
+# testing list-yield
+for t in ${list_iterations3[@]}; do
+    for i in ${list_threads[@]}; do
+	for k in in ${list_yield[@]}; do
+	    ./lab2_list --iterations=$t --threads=$i --yield=$k >> lab2_list.csv
+	done
+    done
+done
+
+# testing list-yield-sync
+for t in ${list_iterations3[@]}; do
+    for i in ${list_threads[@]}; do
+	for k in ${list_yield[@]}; do
+	    for l in ${list_sync[@]}; do
+		./lab2_list --iterations=$t --threads=$i --yield=$k --sync=$l >> lab2_list.csv
+	    done
+	done
+    done
+done
+
+list_threads2=(1 2 4 8 12 16 24)
+# testing list-sync
+for t in ${list_threads2[@]}; do
+    for i in ${list_sync[@]}; do
+	./lab2_list --iterations=1000 --threads=$t --sync=$i >> lab2_list.csv
+    done
+done

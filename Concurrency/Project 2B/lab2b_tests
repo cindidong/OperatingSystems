@@ -1,0 +1,45 @@
+#!/bin/bash
+# NAME: Cindi Dong
+# EMAIL: cindidong@gmail.com
+# ID: 405126747
+
+threads=(1 2 4 8 12 16 24)
+sync=(m s)
+lists=(1 4 8 16)
+
+# testing list-none-sync for pic 1 and 2
+for t in ${threads[@]}; do
+	for i in ${sync[@]}; do
+		./lab2_list --iterations=1000 --threads=$t --sync=$i >> lab2b_list.csv
+	done
+done
+
+iterations=(1 2 4 8 16)
+threads1=(1 4 8 12 16)
+# testing list-yield-none-lists for pic 3
+for t in ${iterations[@]}; do
+	for i in ${threads1[@]}; do
+		./lab2_list --iterations=$t --threads=$i --yield=id --lists=4 >> lab2b_list.csv
+	done
+done
+
+iterations1=(10 20 40 80)
+# testing list-yield-sync-lists for pic 3
+for t in ${iterations1[@]}; do
+	for i in ${threads1[@]}; do
+		for k in ${sync[@]}; do
+			./lab2_list --iterations=$t --threads=$i --sync=$k --yield=id --lists=4 >> lab2b_list.csv
+		done
+	done
+done
+
+lists1=(4 8 16)
+threads2=(1 2 4 8 12)
+# testing list-none-sync-lists for pic 4 and 5
+for t in ${threads2[@]}; do
+	for i in ${lists1[@]}; do
+		for k in ${sync[@]}; do
+			./lab2_list --iterations=1000 --threads=$t --sync=$k --lists=$i >> lab2b_list.csv
+		done
+	done
+done

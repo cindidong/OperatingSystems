@@ -1,0 +1,631 @@
+Total: 317 samples
+     235  74.1%  74.1%      316  99.7% thread_func
+      12   3.8%  77.9%       12   3.8% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:165
+      12   3.8%  81.7%       12   3.8% SortedList_insert
+      10   3.2%  84.9%       10   3.2% SortedList_lookup
+       8   2.5%  87.4%        8   2.5% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:130
+       7   2.2%  89.6%        7   2.2% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1721
+       7   2.2%  91.8%        7   2.2% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1730
+       4   1.3%  93.1%        4   1.3% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:134
+       4   1.3%  94.3%        4   1.3% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:204
+       3   0.9%  95.3%        3   0.9% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:160
+       3   0.9%  96.2%        3   0.9% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1720
+       3   0.9%  97.2%        3   0.9% _init
+       2   0.6%  97.8%        2   0.6% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:205
+       2   0.6%  98.4%        2   0.6% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1714
+       2   0.6%  99.1%        2   0.6% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1729
+       1   0.3%  99.4%        1   0.3% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:202
+       1   0.3%  99.7%        1   0.3% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:203
+       1   0.3% 100.0%        1   0.3% 0x00007ffd429f6925
+       0   0.0% 100.0%        1   0.3% __GI___clock_gettime
+       0   0.0% 100.0%      317 100.0% start_thread
+ROUTINE ====================== thread_func in /u/be/ugrad/cindi/111/lab2b/lab2_list.c
+   235    316 Total samples (flat / cumulative)
+     .      .   45:     }
+     .      .   46:   return (hash_value % lists_number);
+     .      .   47: }
+     .      .   48: 
+     .      .   49: void* thread_func(void* position)
+---
+     .      .   50: {
+     .      .   51:   int index = *((int*) position);
+     .      .   52:   int i;
+     .      .   53:   int length = 0;
+     .      .   54:   int delete_status = 0;
+     .      .   55:   struct timespec startTime, endTime;
+     .      .   56:   long long runtime = 0;
+     .      .   57:   int heads_index;
+     .      .   58:   int sublist_length = 0;
+     .      .   59:   //mutex lock
+     .      .   60:   if (m_lock_flag == 1)
+     .      .   61:     {
+     .      .   62:       //insert
+     .      .   63:       for (i = index; i < index + iterations_number; i++)
+     .      .   64:         {
+     .      .   65: 	  //getting the index of the head
+     .      .   66: 	  //if there is 1 list, there is only 1 head
+     .      .   67: 	  if (lists_number == 1)
+     .      .   68:             {
+     .      .   69: 	      heads_index = 0;
+     .      .   70:             }
+     .      .   71: 	  else
+     .      .   72:             {
+     .      .   73: 	      heads_index = hash(elements[i].key);
+     .      .   74:             }
+     .      .   75: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .   76:             {
+     .      .   77: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .   78: 	      exit(1);
+     .      .   79:             }
+     .      .   80: 	  pthread_mutex_lock(&locks[heads_index]);
+     .      .   81: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .   82:             {
+     .      .   83: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .   84: 	      exit(1);
+     .      .   85:             }
+     .      .   86: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .   87: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .   88: 	  pthread_mutex_unlock(&locks[heads_index]);
+     .      .   89:         }
+     .      .   90:       //get length
+     .      .   91:       for (i = 0; i < lists_number; i++)
+     .      .   92:         {
+     .      .   93: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .   94:             {
+     .      .   95: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .   96: 	      exit(1);
+     .      .   97:             }
+     .      .   98: 	  pthread_mutex_lock(&locks[i]);
+     .      .   99: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  100:             {
+     .      .  101: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  102: 	      exit(1);
+     .      .  103:             }
+     .      .  104: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  105: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  106: 	  pthread_mutex_unlock(&locks[i]);
+     .      .  107: 	  //check each sublist's length
+     .      .  108: 	  if (sublist_length < 0)
+     .      .  109:             {
+     .      .  110: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  111: 	      exit(2);
+     .      .  112:             }
+     .      .  113: 	  length = length + sublist_length;
+     .      .  114:         }
+     .      .  115:       //check overall length
+     .      .  116:       if (length < 0)
+     .      .  117:         {
+     .      .  118: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  119: 	  exit(2);
+     .      .  120:         }
+     .      .  121:       //delete
+     .      .  122:       for (i = index; i < index + iterations_number; i++)
+     .      .  123:         {
+     .      .  124: 	  //get index of head
+     .      .  125: 	  if (lists_number == 1)
+     .      .  126:             {
+     .      .  127: 	      heads_index = 0;
+     .      .  128:             }
+     .      .  129: 	  else
+     .      .  130:             {
+     .      .  131: 	      heads_index = hash(elements[i].key);
+     .      .  132:             }
+     .      .  133: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  134:             {
+     .      .  135: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  136: 	      exit(1);
+     .      .  137:             }
+     .      .  138: 	  pthread_mutex_lock(&locks[heads_index]);
+     .      .  139: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  140:             {
+     .      .  141: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  142: 	      exit(1);
+     .      .  143:             }
+     .      .  144: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  145: 	  //look up element to delete
+     .      .  146: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  147: 	  if (temp == NULL)
+     .      .  148:             {
+     .      .  149: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  150: 	      pthread_mutex_unlock(&locks[heads_index]);
+     .      .  151: 	      exit(2);
+     .      .  152:             }
+     .      .  153: 	  delete_status = SortedList_delete(temp);
+     .      .  154: 	  pthread_mutex_unlock(&locks[heads_index]);
+     .      .  155: 	  if (delete_status > 0)
+     .      .  156:             {
+     .      .  157: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  158: 	      exit(2);
+     .      .  159:             }
+     .      .  160:         }
+     .      .  161:       //store lock wait time in lock_time with thread's index
+     .      .  162:       lock_time[index/iterations_number] = runtime;
+     .      .  163:     }
+     .      .  164:   //spin lock
+     .      .  165:   else if (s_lock_flag == 1)
+     .      .  166:     {
+     .      .  167:       //insert
+     .      .  168:       for (i = index; i < index + iterations_number; i++)
+     .      .  169:         {
+     .      .  170: 	  //get index of head
+     .      .  171: 	  if (lists_number == 1)
+     .      .  172:             {
+     .      .  173: 	      heads_index = 0;
+     .      .  174:             }
+     .      .  175: 	  else
+     .      .  176:             {
+     .      .  177: 	      heads_index = hash(elements[i].key);
+     .      .  178:             }
+     .      .  179: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  180:             {
+     .      .  181: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  182: 	      exit(1);
+     .      .  183:             }
+   172    172  184: 	  while (__sync_lock_test_and_set(&spin_locks[heads_index], 1))
+     .      .  185:             {
+     .      .  186: 	      continue;
+     .      .  187:             }
+     .      .  188: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  189:             {
+     .      .  190: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  191: 	      exit(1);
+     .      .  192:             }
+     .      .  193: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .     38  194: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .  195: 	  __sync_lock_release(&spin_locks[heads_index]);
+     .      .  196:         }
+     .      .  197:       //get length
+     .      .  198:       for (i = 0; i < lists_number; i++)
+     .      .  199:         {
+     .      .  200: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  201:             {
+     .      .  202: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  203: 	      exit(1);
+     .      .  204:             }
+     .      .  205: 	  while (__sync_lock_test_and_set(&spin_locks[i], 1))
+     .      .  206:             {
+     .      .  207: 	      continue;
+     .      .  208:             }
+     .      .  209: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  210:             {
+     .      .  211: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  212: 	      exit(1);
+     .      .  213:             }
+     .      .  214: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  215: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  216: 	  __sync_lock_release(&spin_locks[i]);
+     .      .  217: 	  //check sublist's length
+     .      .  218: 	  if (sublist_length < 0)
+     .      .  219:             {
+     .      .  220: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  221: 	      exit(2);
+     .      .  222:             }
+     .      .  223: 	  length = length + sublist_length;
+     .      .  224:         }
+     .      .  225:       //check total length
+     .      .  226:       if (length < 0)
+     .      .  227:         {
+     .      .  228: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  229: 	  exit(2);
+     .      .  230:         }
+     .      .  231:       //delete
+     .      .  232:       for (i = index; i < index + iterations_number; i++)
+     .      .  233:         {
+     .      .  234: 	  //get index of head
+     .      .  235: 	  if (lists_number == 1)
+     .      .  236:             {
+     .      .  237: 	      heads_index = 0;
+     .      .  238:             }
+     .      .  239: 	  else
+     .      .  240:             {
+     .      .  241: 	      heads_index = hash(elements[i].key);
+     .      .  242:             }
+     .      .  243: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  244:             {
+     .      .  245: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  246: 	      exit(1);
+     .      .  247:             }
+    63     63  248: 	  while (__sync_lock_test_and_set(&spin_locks[heads_index], 1))
+     .      .  249:             {
+     .      .  250: 	      continue;
+     .      .  251:             }
+     .      .  252: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  253:             {
+     .      .  254: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  255: 	      exit(1);
+     .      .  256:             }
+     .      .  257: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  258: 	  //look up element to delete
+     .     43  259: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  260: 	  if (temp == NULL)
+     .      .  261:             {
+     .      .  262: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  263: 	      __sync_lock_release(&spin_locks[heads_index]);
+     .      .  264: 	      exit(2);
+     .      .  265:             }
+     .      .  266: 	  delete_status = SortedList_delete(temp);
+     .      .  267: 	  __sync_lock_release(&spin_locks[heads_index]);
+     .      .  268: 	  if (delete_status > 0)
+     .      .  269:             {
+     .      .  270: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  271: 	      exit(2);
+     .      .  272:             }
+     .      .  273:         }
+     .      .  274:       //store lock wait time in lock_time with thread's index
+     .      .  275:       lock_time[index/iterations_number] = runtime;
+     .      .  276:     }
+     .      .  277:   //no lock
+     .      .  278:   else
+     .      .  279:     {
+     .      .  280:       //insert
+     .      .  281:       for (i = index; i < index + iterations_number; i++)
+     .      .  282:         {
+     .      .  283: 	  //get index of head
+     .      .  284: 	  if (lists_number == 1)
+     .      .  285:             {
+     .      .  286: 	      heads_index = 0;
+     .      .  287:             }
+     .      .  288: 	  else
+     .      .  289:             {
+     .      .  290: 	      heads_index = hash(elements[i].key);
+     .      .  291:             }
+     .      .  292: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .  293:         }
+     .      .  294:       //get length
+     .      .  295:       for (i = 0; i < lists_number; i++)
+     .      .  296:         {
+     .      .  297: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  298: 	  //check sublist's length
+     .      .  299: 	  if (sublist_length < 0)
+     .      .  300:             {
+     .      .  301: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  302: 	      exit(2);
+     .      .  303:             }
+     .      .  304: 	  length = length + sublist_length;
+     .      .  305:         }
+     .      .  306:       //check total length
+     .      .  307:       if (length < 0)
+     .      .  308:         {
+     .      .  309: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  310: 	  exit(2);
+     .      .  311:         }
+     .      .  312:       //delete
+     .      .  313:       for (i = index; i < index + iterations_number; i++)
+     .      .  314:         {
+     .      .  315: 	  //get index of head
+     .      .  316: 	  if (lists_number == 1)
+     .      .  317:             {
+     .      .  318: 	      heads_index = 0;
+     .      .  319:             }
+     .      .  320: 	  else
+     .      .  321:             {
+     .      .  322: 	      heads_index = hash(elements[i].key);
+     .      .  323:             }
+     .      .  324: 	  //look up element to delete
+     .      .  325: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  326: 	  if (temp == NULL)
+     .      .  327:             {
+     .      .  328: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  329: 	      exit(2);
+     .      .  330:             }
+     .      .  331: 	  delete_status = SortedList_delete(temp);
+     .      .  332: 	  if (delete_status == 1)
+     .      .  333:             {
+     .      .  334: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  335: 	      exit(2);
+     .      .  336:             }
+     .      .  337:         }
+     .      .  338:     }
+     .      .  339:   return NULL;
+     .      .  340: }
+---
+     .      .  341: 
+     .      .  342: 
+     .      .  343:     
+     .      .  344: int main(int argc, char **argv) {
+     .      .  345:   int threads_number = 1;
+ROUTINE ====================== thread_func in /u/be/ugrad/cindi/111/lab2b/lab2_list.c
+   235    316 Total samples (flat / cumulative)
+     .      .   45:     }
+     .      .   46:   return (hash_value % lists_number);
+     .      .   47: }
+     .      .   48: 
+     .      .   49: void* thread_func(void* position)
+---
+     .      .   50: {
+     .      .   51:   int index = *((int*) position);
+     .      .   52:   int i;
+     .      .   53:   int length = 0;
+     .      .   54:   int delete_status = 0;
+     .      .   55:   struct timespec startTime, endTime;
+     .      .   56:   long long runtime = 0;
+     .      .   57:   int heads_index;
+     .      .   58:   int sublist_length = 0;
+     .      .   59:   //mutex lock
+     .      .   60:   if (m_lock_flag == 1)
+     .      .   61:     {
+     .      .   62:       //insert
+     .      .   63:       for (i = index; i < index + iterations_number; i++)
+     .      .   64:         {
+     .      .   65: 	  //getting the index of the head
+     .      .   66: 	  //if there is 1 list, there is only 1 head
+     .      .   67: 	  if (lists_number == 1)
+     .      .   68:             {
+     .      .   69: 	      heads_index = 0;
+     .      .   70:             }
+     .      .   71: 	  else
+     .      .   72:             {
+     .      .   73: 	      heads_index = hash(elements[i].key);
+     .      .   74:             }
+     .      .   75: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .   76:             {
+     .      .   77: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .   78: 	      exit(1);
+     .      .   79:             }
+     .      .   80: 	  pthread_mutex_lock(&locks[heads_index]);
+     .      .   81: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .   82:             {
+     .      .   83: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .   84: 	      exit(1);
+     .      .   85:             }
+     .      .   86: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .   87: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .   88: 	  pthread_mutex_unlock(&locks[heads_index]);
+     .      .   89:         }
+     .      .   90:       //get length
+     .      .   91:       for (i = 0; i < lists_number; i++)
+     .      .   92:         {
+     .      .   93: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .   94:             {
+     .      .   95: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .   96: 	      exit(1);
+     .      .   97:             }
+     .      .   98: 	  pthread_mutex_lock(&locks[i]);
+     .      .   99: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  100:             {
+     .      .  101: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  102: 	      exit(1);
+     .      .  103:             }
+     .      .  104: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  105: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  106: 	  pthread_mutex_unlock(&locks[i]);
+     .      .  107: 	  //check each sublist's length
+     .      .  108: 	  if (sublist_length < 0)
+     .      .  109:             {
+     .      .  110: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  111: 	      exit(2);
+     .      .  112:             }
+     .      .  113: 	  length = length + sublist_length;
+     .      .  114:         }
+     .      .  115:       //check overall length
+     .      .  116:       if (length < 0)
+     .      .  117:         {
+     .      .  118: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  119: 	  exit(2);
+     .      .  120:         }
+     .      .  121:       //delete
+     .      .  122:       for (i = index; i < index + iterations_number; i++)
+     .      .  123:         {
+     .      .  124: 	  //get index of head
+     .      .  125: 	  if (lists_number == 1)
+     .      .  126:             {
+     .      .  127: 	      heads_index = 0;
+     .      .  128:             }
+     .      .  129: 	  else
+     .      .  130:             {
+     .      .  131: 	      heads_index = hash(elements[i].key);
+     .      .  132:             }
+     .      .  133: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  134:             {
+     .      .  135: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  136: 	      exit(1);
+     .      .  137:             }
+     .      .  138: 	  pthread_mutex_lock(&locks[heads_index]);
+     .      .  139: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  140:             {
+     .      .  141: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  142: 	      exit(1);
+     .      .  143:             }
+     .      .  144: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  145: 	  //look up element to delete
+     .      .  146: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  147: 	  if (temp == NULL)
+     .      .  148:             {
+     .      .  149: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  150: 	      pthread_mutex_unlock(&locks[heads_index]);
+     .      .  151: 	      exit(2);
+     .      .  152:             }
+     .      .  153: 	  delete_status = SortedList_delete(temp);
+     .      .  154: 	  pthread_mutex_unlock(&locks[heads_index]);
+     .      .  155: 	  if (delete_status > 0)
+     .      .  156:             {
+     .      .  157: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  158: 	      exit(2);
+     .      .  159:             }
+     .      .  160:         }
+     .      .  161:       //store lock wait time in lock_time with thread's index
+     .      .  162:       lock_time[index/iterations_number] = runtime;
+     .      .  163:     }
+     .      .  164:   //spin lock
+     .      .  165:   else if (s_lock_flag == 1)
+     .      .  166:     {
+     .      .  167:       //insert
+     .      .  168:       for (i = index; i < index + iterations_number; i++)
+     .      .  169:         {
+     .      .  170: 	  //get index of head
+     .      .  171: 	  if (lists_number == 1)
+     .      .  172:             {
+     .      .  173: 	      heads_index = 0;
+     .      .  174:             }
+     .      .  175: 	  else
+     .      .  176:             {
+     .      .  177: 	      heads_index = hash(elements[i].key);
+     .      .  178:             }
+     .      .  179: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  180:             {
+     .      .  181: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  182: 	      exit(1);
+     .      .  183:             }
+   172    172  184: 	  while (__sync_lock_test_and_set(&spin_locks[heads_index], 1))
+     .      .  185:             {
+     .      .  186: 	      continue;
+     .      .  187:             }
+     .      .  188: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  189:             {
+     .      .  190: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  191: 	      exit(1);
+     .      .  192:             }
+     .      .  193: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .     38  194: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .  195: 	  __sync_lock_release(&spin_locks[heads_index]);
+     .      .  196:         }
+     .      .  197:       //get length
+     .      .  198:       for (i = 0; i < lists_number; i++)
+     .      .  199:         {
+     .      .  200: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  201:             {
+     .      .  202: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  203: 	      exit(1);
+     .      .  204:             }
+     .      .  205: 	  while (__sync_lock_test_and_set(&spin_locks[i], 1))
+     .      .  206:             {
+     .      .  207: 	      continue;
+     .      .  208:             }
+     .      .  209: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  210:             {
+     .      .  211: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  212: 	      exit(1);
+     .      .  213:             }
+     .      .  214: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  215: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  216: 	  __sync_lock_release(&spin_locks[i]);
+     .      .  217: 	  //check sublist's length
+     .      .  218: 	  if (sublist_length < 0)
+     .      .  219:             {
+     .      .  220: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  221: 	      exit(2);
+     .      .  222:             }
+     .      .  223: 	  length = length + sublist_length;
+     .      .  224:         }
+     .      .  225:       //check total length
+     .      .  226:       if (length < 0)
+     .      .  227:         {
+     .      .  228: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  229: 	  exit(2);
+     .      .  230:         }
+     .      .  231:       //delete
+     .      .  232:       for (i = index; i < index + iterations_number; i++)
+     .      .  233:         {
+     .      .  234: 	  //get index of head
+     .      .  235: 	  if (lists_number == 1)
+     .      .  236:             {
+     .      .  237: 	      heads_index = 0;
+     .      .  238:             }
+     .      .  239: 	  else
+     .      .  240:             {
+     .      .  241: 	      heads_index = hash(elements[i].key);
+     .      .  242:             }
+     .      .  243: 	  if (clock_gettime(CLOCK_REALTIME, &startTime) < 0)
+     .      .  244:             {
+     .      .  245: 	      fprintf(stderr, "Start clock error: %s\n", strerror(errno));
+     .      .  246: 	      exit(1);
+     .      .  247:             }
+    63     63  248: 	  while (__sync_lock_test_and_set(&spin_locks[heads_index], 1))
+     .      .  249:             {
+     .      .  250: 	      continue;
+     .      .  251:             }
+     .      .  252: 	  if (clock_gettime(CLOCK_REALTIME, &endTime) < 0)
+     .      .  253:             {
+     .      .  254: 	      fprintf(stderr, "End clock error: %s\n", strerror(errno));
+     .      .  255: 	      exit(1);
+     .      .  256:             }
+     .      .  257: 	  runtime += 1000000000 * (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec);
+     .      .  258: 	  //look up element to delete
+     .     43  259: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  260: 	  if (temp == NULL)
+     .      .  261:             {
+     .      .  262: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  263: 	      __sync_lock_release(&spin_locks[heads_index]);
+     .      .  264: 	      exit(2);
+     .      .  265:             }
+     .      .  266: 	  delete_status = SortedList_delete(temp);
+     .      .  267: 	  __sync_lock_release(&spin_locks[heads_index]);
+     .      .  268: 	  if (delete_status > 0)
+     .      .  269:             {
+     .      .  270: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  271: 	      exit(2);
+     .      .  272:             }
+     .      .  273:         }
+     .      .  274:       //store lock wait time in lock_time with thread's index
+     .      .  275:       lock_time[index/iterations_number] = runtime;
+     .      .  276:     }
+     .      .  277:   //no lock
+     .      .  278:   else
+     .      .  279:     {
+     .      .  280:       //insert
+     .      .  281:       for (i = index; i < index + iterations_number; i++)
+     .      .  282:         {
+     .      .  283: 	  //get index of head
+     .      .  284: 	  if (lists_number == 1)
+     .      .  285:             {
+     .      .  286: 	      heads_index = 0;
+     .      .  287:             }
+     .      .  288: 	  else
+     .      .  289:             {
+     .      .  290: 	      heads_index = hash(elements[i].key);
+     .      .  291:             }
+     .      .  292: 	  SortedList_insert(&heads[heads_index], &elements[i]);
+     .      .  293:         }
+     .      .  294:       //get length
+     .      .  295:       for (i = 0; i < lists_number; i++)
+     .      .  296:         {
+     .      .  297: 	  sublist_length = SortedList_length(&heads[i]);
+     .      .  298: 	  //check sublist's length
+     .      .  299: 	  if (sublist_length < 0)
+     .      .  300:             {
+     .      .  301: 	      fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  302: 	      exit(2);
+     .      .  303:             }
+     .      .  304: 	  length = length + sublist_length;
+     .      .  305:         }
+     .      .  306:       //check total length
+     .      .  307:       if (length < 0)
+     .      .  308:         {
+     .      .  309: 	  fprintf(stderr, "Insert length error: Corrupted list\n");
+     .      .  310: 	  exit(2);
+     .      .  311:         }
+     .      .  312:       //delete
+     .      .  313:       for (i = index; i < index + iterations_number; i++)
+     .      .  314:         {
+     .      .  315: 	  //get index of head
+     .      .  316: 	  if (lists_number == 1)
+     .      .  317:             {
+     .      .  318: 	      heads_index = 0;
+     .      .  319:             }
+     .      .  320: 	  else
+     .      .  321:             {
+     .      .  322: 	      heads_index = hash(elements[i].key);
+     .      .  323:             }
+     .      .  324: 	  //look up element to delete
+     .      .  325: 	  SortedListElement_t* temp = SortedList_lookup(&heads[heads_index], elements[i].key);
+     .      .  326: 	  if (temp == NULL)
+     .      .  327:             {
+     .      .  328: 	      fprintf(stderr, "Unable to find the element to delete error: Corrupted list\n");
+     .      .  329: 	      exit(2);
+     .      .  330:             }
+     .      .  331: 	  delete_status = SortedList_delete(temp);
+     .      .  332: 	  if (delete_status == 1)
+     .      .  333:             {
+     .      .  334: 	      fprintf(stderr, "List delete error: Corrupted list\n");
+     .      .  335: 	      exit(2);
+     .      .  336:             }
+     .      .  337:         }
+     .      .  338:     }
+     .      .  339:   return NULL;
+     .      .  340: }
+---
+     .      .  341: 
+     .      .  342: 
+     .      .  343:     
+     .      .  344: int main(int argc, char **argv) {
+     .      .  345:   int threads_number = 1;
